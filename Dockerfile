@@ -102,7 +102,7 @@ RUN apk add --no-cache bash openssl tzdata nodejs python3 libsndfile
 FROM ghcr.io/berriai/litellm:main-stable
 
 ARG TAILSCALE_VERSION=1.98.8
-RUN apk add --no-cache curl ca-certificates bash tar && \
+RUN apk add --no-cache curl ca-certificates bash gnutar && \
     mkdir -p /tmp/ts && \
     curl -v -L -o /tmp/tailscale.tgz "https://pkgs.tailscale.com/stable/tailscale_${TAILSCALE_VERSION}_amd64.tgz" && \
     ls -la /tmp/tailscale.tgz && \
