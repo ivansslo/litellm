@@ -98,34 +98,30 @@ USER root
 
 # node (without npm) is required by the prisma CLI at runtime
 RUN apk add --no-cache bash openssl tzdata nodejs python3 libsndfile
+FROM ghcr.io/berriai/litellm:main-stable
+
+# Install Tailscale sebagai static binary — nggak bergantung sama repo APT
+# base image, jadi aman dipakai di image apa pun.
+ARG TAILSCALE_VERSION=1.90.6
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl ca-certificates && \
+    curl -fsSL "https://pkgs.tailscale.com/stable/tailscale_${TAILSCALE_VERSION}_amd64.tgz" \
+        | tar xz -C /tmp && \
+    mv "/tmp/tailscale_${TAILSCALE_VERSION}_amd64/tailscale" /usr/local/bin/ && \
+    mv "/tmp/tailscale_${TAILSCALE_VERSION}_amd64/tailscaled" /usr/local/bin/ && \
+    rm -rf "/tmp/tailscale_${TAILSCALE_VERSION}_amd64" && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+
+COPY config.yaml .
+COPY docker/entrypoint.sh docker/tailsup.sh /app/docker/
+RUN chmod +x /app/docker/entrypoint.sh /app/docker/tailsup.sh
 ENV PATH="/app/.venv/bin:${PATH}"
 
 # Copy only what runtime needs. The application is installed inside the venv;
 # the rest of the builder's /app is source and build metadata that must not
 # ship (manifest-scanning tools attribute everything in it to this image).
 # entrypoint.sh invokes litellm/proxy/prisma_migration.py by source path.
-COPY --from=builder /app/.venv /app/.venv
-COPY --from=builder /app/docker /app/docker
-COPY --from=builder /app/schema.prisma /app/schema.prisma
-COPY --from=builder /app/litellm/proxy/prisma_migration.py /app/litellm/proxy/prisma_migration.py
-# enterprise/ is imported by source path at runtime (proxy_cli puts the
-# working directory on sys.path; litellm/proxy/hooks resolves
-# enterprise.enterprise_hooks from it)
-COPY --from=builder /app/enterprise /app/enterprise
-# Prisma binaries live in $HOME/.cache (default prisma-python location),
-# which is /root/.cache here. Copy only the Prisma subdirs — copying the
-# whole /root/.cache drags in the uv build cache (~660 MB, includes a
-# setuptools wheel that surfaces as a CVE finding even though it's not
-# on the runtime sys.path).
-COPY --from=builder /root/.cache/prisma /root/.cache/prisma
-COPY --from=builder /root/.cache/prisma-python /root/.cache/prisma-python
-
-RUN find /app/.venv -type f -path "*/tornado/test/*" -delete && \
-    find /app/.venv -type d -path "*/tornado/test" -delete
-
-EXPOSE 4000/tcp
-
-ENTRYPOINT ["docker/prod_entrypoint.sh"]
-CMD ["--port", "4000"]
+ENTRYPOINT ["/app/docker/entrypoint.sh"]
+CMD ["--config", "/app/config.yaml"]
