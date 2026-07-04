@@ -102,23 +102,21 @@ FROM ghcr.io/berriai/litellm:main-stable
 
 # Install Tailscale sebagai static binary — nggak bergantung sama repo APT
 # base image, jadi aman dipakai di image apa pun.
-ARG TAILSCALE_VERSION=1.90.6
-RUN curl -fsSL "https://pkgs.tailscale.com/stable/tailscale_${TAILSCALE_VERSION}_amd64.tgz" \
-    | tar xz -C /tmp && \
-    mv "/tmp/tailscale_${TAILSCALE_VERSION}_amd64/tailscale" /usr/local/bin/ && \
-    mv "/tmp/tailscale_${TAILSCALE_VERSION}_amd64/tailscaled" /usr/local/bin/ && \
-    rm -rf "/tmp/tailscale_${TAILSCALE_VERSION}_amd64"
-    
+FROM ghcr.io/berriai/litellm:main-stable
+
+ARG TAILSCALE_VERSION=1.98.8
+RUN apk add --no-cache curl ca-certificates bash && \
+    mkdir -p /tmp/ts && \
+    curl -fsSL "https://pkgs.tailscale.com/stable/tailscale_${TAILSCALE_VERSION}_amd64.tgz" \
+        | tar xz -C /tmp/ts --strip-components=1 && \
+    mv /tmp/ts/tailscale /tmp/ts/tailscaled /usr/local/bin/ && \
+    rm -rf /tmp/ts
+
 WORKDIR /app
 
 COPY config.yaml .
 COPY docker/entrypoint.sh docker/tailsup.sh /app/docker/
 RUN chmod +x /app/docker/entrypoint.sh /app/docker/tailsup.sh
-ENV PATH="/app/.venv/bin:${PATH}"
 
-# Copy only what runtime needs. The application is installed inside the venv;
-# the rest of the builder's /app is source and build metadata that must not
-# ship (manifest-scanning tools attribute everything in it to this image).
-# entrypoint.sh invokes litellm/proxy/prisma_migration.py by source path.
 ENTRYPOINT ["/app/docker/entrypoint.sh"]
 CMD ["--config", "/app/config.yaml"]
