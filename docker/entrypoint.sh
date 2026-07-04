@@ -1,16 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-VENV_PYTHON="$REPO_ROOT/.venv/bin/python"
-MIGRATION_SCRIPT="$REPO_ROOT/litellm/proxy/prisma_migration.py"
-
-if [ -x "$VENV_PYTHON" ]; then
-    "$VENV_PYTHON" "$MIGRATION_SCRIPT"
-elif command -v uv >/dev/null 2>&1; then
-    (cd "$REPO_ROOT" && uv run --no-sync python "$MIGRATION_SCRIPT")
-else
-    python3 "$MIGRATION_SCRIPT"
+# --- Tailscale (opsional, non-blocking, jalan di background) ---
+if [ -f /app/docker/tailsup.sh ]; then
+    bash /app/docker/tailsup.sh &
 fi
 
-echo "Migration script ran successfully!"
+# Render inject $PORT dinamis; jangan hardcode 4000.
+exec litellm "$@" --port "${PORT:-4000}"
+echo "Tailscaled script successfully!"
