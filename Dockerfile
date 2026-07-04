@@ -102,14 +102,12 @@ RUN apk add --no-cache bash openssl tzdata nodejs python3 libsndfile
 FROM ghcr.io/berriai/litellm:main-stable
 
 ARG TAILSCALE_VERSION=1.98.8
-RUN apk add --no-cache curl ca-certificates bash gnutar && \
-    mkdir -p /tmp/ts && \
-    curl -v -L -o /tmp/tailscale.tgz "https://pkgs.tailscale.com/stable/tailscale_${TAILSCALE_VERSION}_amd64.tgz" && \
-    ls -la /tmp/tailscale.tgz && \
-    tar -xzvf /tmp/tailscale.tgz -C /tmp/ts --strip-components=1 && \
-    ls -la /tmp/ts && \
-    mv /tmp/ts/tailscale /tmp/ts/tailscaled /usr/local/bin/ && \
-    rm -rf /tmp/ts /tmp/tailscale.tgz
+# Install tailscale straight from the Chainguard/Wolfi apk repo that this base
+# image already trusts. This avoids a manual curl+tar+mv dance, which was
+# observed to intermittently fail with spurious "No such file or directory"
+# errors on some builders even right after `ls` showed the files present
+# (a filesystem-layer race, not a Dockerfile logic bug).
+RUN apk add --no-cache "tailscale~${TAILSCALE_VERSION}"
 
 
 WORKDIR /app
