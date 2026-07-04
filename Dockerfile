@@ -102,7 +102,7 @@ FROM ghcr.io/berriai/litellm:main-stable
 
 # Install Tailscale sebagai static binary — nggak bergantung sama repo APT
 # base image, jadi aman dipakai di image apa pun.
-ARG TAILSCALE_VERSION=1.90.6
+ARG TAILSCALE_VERSION=1.98.8
 RUN apk add --no-cache curl ca-certificates bash && \
     mkdir -p /tmp/ts && \
     curl -fsSL "https://pkgs.tailscale.com/stable/tailscale_${TAILSCALE_VERSION}_amd64.tgz" \
