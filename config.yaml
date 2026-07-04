@@ -1,0 +1,14 @@
+model_list:
+  - model_name: gpt-4o
+    litellm_params:
+      model: openai/gpt-4o
+      api_key: os.environ/OPENAI_API_KEY
+
+  # Model lokal via Ollama, dipanggil lewat nama alias ini dari Hermes
+  - model_name: llama-local
+    litellm_params:
+      model: ollama/llama-4-scout
+      api_base: http://ollama-xxxx:10000   # ganti sesuai internal hostname kamu
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
