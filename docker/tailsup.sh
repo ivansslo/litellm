@@ -14,7 +14,7 @@ fi
 
 tailscaled --tun=userspace-networking \
     --socks5-server=localhost:1055 \
-    --outbound-http-proxy-server=localhost:1055 \
+    --outbound-http-proxy-listen=localhost:1055 \
     --state=/tmp/tailscaled.state \
     --socket=/tmp/tailscaled.sock &
 
