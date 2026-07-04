@@ -104,10 +104,10 @@ FROM ghcr.io/berriai/litellm:main-stable
 # base image, jadi aman dipakai di image apa pun.
 FROM ghcr.io/berriai/litellm:main-stable
 
-ARG TAILSCALE_VERSION=1.98.8
+ARG TAILSCALE_VERSION=1.90.6
 RUN apk add --no-cache curl ca-certificates bash && \
     mkdir -p /tmp/ts && \
-    curl -fsSL "https://pkgs.tailscale.com/stable/tailscale_${TAILSCALE_VERSION}_amd64.tgz" \
+    RUN curl -fsSL "https://pkgs.tailscale.com/stable/tailscale_${TAILSCALE_VERSION}_amd64.tgz" \
         | tar xz -C /tmp/ts --strip-components=1 && \
     mv /tmp/ts/tailscale /tmp/ts/tailscaled /usr/local/bin/ && \
     rm -rf /tmp/ts
