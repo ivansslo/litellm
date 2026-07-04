@@ -8,7 +8,7 @@ model_list:
   - model_name: llama-local
     litellm_params:
       model: ollama/llama-4-scout
-      api_base: http://ollama-xxxx:10000   # ganti sesuai internal hostname kamu
+      api_base: http://hermes-agent-api:8000   # ganti sesuai internal hostname kamu
 
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
