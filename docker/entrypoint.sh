@@ -7,5 +7,5 @@ if [ -f /app/docker/tailsup.sh ]; then
 fi
 
 # Render inject $PORT dinamis; jangan hardcode 4000.
-exec litellm "$@" --port "${PORT:-4000}"
+exec litellm "$@" --port "${PORT:-8000}"
 echo "Tailscaled script successfully!"
